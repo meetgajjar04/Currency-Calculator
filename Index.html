@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #141e30, #243b55);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            width: 350px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        input {
+            background: rgba(255, 255, 255, 0.8);
+            color: black;
+            font-weight: bold;
+        }
+
+        select {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            cursor: pointer;
+        }
+
+        button {
+            background: #ff4b2b;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ff5733;
+            transform: scale(1.05);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>💱 Currency Converter</h2>
+        
+        <div class="input-container">
+            <input type="number" id="amount" placeholder="Enter amount" value="1">
+            
+            <select id="fromCurrency"></select>
+            <select id="toCurrency"></select>
+            
+            <button onclick="convertCurrency()">Convert</button>
+        </div>
+
+        <h3 id="result">Converted Amount: </h3>
+    </div>
+
+    <script>
+        const apiKey = "cae571a79749e1a6e93c03e6"; // Replace with your ExchangeRate-API key
+        const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+
+        let exchangeRates = {};
+
+        async function fetchExchangeRates() {
+            try {
+                let response = await fetch(apiUrl);
+                let data = await response.json();
+                if (data.result === "success") {
+                    exchangeRates = data.conversion_rates;
+                    populateDropdowns();
+                } else {
+                    alert("Error fetching exchange rates. Please check API key.");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("Failed to fetch exchange rates.");
+            }
+        }
+
+        function populateDropdowns() {
+            const currencyList = Object.keys(exchangeRates);
+            const fromCurrency = document.getElementById("fromCurrency");
+            const toCurrency = document.getElementById("toCurrency");
+
+            currencyList.forEach(currency => {
+                let option1 = document.createElement("option");
+                let option2 = document.createElement("option");
+                option1.value = option2.value = currency;
+                option1.text = option2.text = currency;
+                fromCurrency.appendChild(option1);
+                toCurrency.appendChild(option2);
+            });
+
+            fromCurrency.value = "USD";
+            toCurrency.value = "EUR";
+        }
+
+        function convertCurrency() {
+            let amount = parseFloat(document.getElementById("amount").value);
+            let from = document.getElementById("fromCurrency").value;
+            let to = document.getElementById("toCurrency").value;
+
+            if (!amount || amount <= 0) {
+                document.getElementById("result").innerText = "Please enter a valid amount";
+                return;
+            }
+
+            let convertedAmount = (amount / exchangeRates[from]) * exchangeRates[to];
+            document.getElementById("result").innerText = `Converted Amount: ${convertedAmount.toFixed(2)} ${to}`;
+        }
+
+        fetchExchangeRates();
+    </script>
+</body>
+</html>
